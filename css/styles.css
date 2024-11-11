@@ -1,0 +1,40 @@
+/* styles.css */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  background-color: #333;
+}
+
+nav ul {
+  margin: 0;
+  padding: 10px;
+  list-style-type: none;
+  display: flex;
+}
+
+nav li {
+  margin-right: 20px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+h1 {
+  padding: 20px;
+}
+
+.project {
+  padding: 20px;
+  border-bottom: 1px solid #ccc;
+}
+
+.project-details {
+  padding-top: 10px;
+}

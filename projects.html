@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Projects</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Simple CSS for drop-down functionality */
+    .project {
+      margin-bottom: 20px;
+    }
+
+    .project img {
+      max-width: 200px;
+      display: block;
+    }
+
+    .project-details {
+      display: none;
+    }
+
+    .project:hover .project-details {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About Me</a></li>
+    </ul>
+  </nav>
+  <h1>My Projects</h1>
+
+  <!-- Example Project 1 -->
+  <div class="project">
+    <h2>Mars Rover Simulation</h2>
+    <img src="images/simulation/simulation_title_image.png" alt="Cornell's Mars Rover ready for the Autonomous Mission">
+    <div class="project-details">
+      <p>Simulation to rapidly develop and test functionalities of
+        the University Rover Competition Autonomous Mission</p>
+      <a href="projects/simulation.html">Learn more</a>
+    </div>
+  </div>
+
+  <!-- Example Project 2 -->
+  <div class="project">
+    <h2>Rover Autonomous Typing</h2>
+    <img src="images/autonomous_typing/rover_lander.png" alt="The Lander the Rover Must Type on">
+    <div class="project-details">
+      <p>Given a set of characters, the rover can type them on the keyboard
+        autonomously, a necessary part of the Equipment Servicing Mission.</p>
+      <a href="projects/autonomous_typing.html">Learn more</a>
+    </div>
+  </div>
+</body>
+
+</html>

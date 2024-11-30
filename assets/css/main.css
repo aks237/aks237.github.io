@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2&family=Alegreya+Sans&display=swap');
+
+/* Base Styles */
+body {
+  margin: 0;
+  font-family: 'Alegreya Sans', sans-serif;
+  background-color: #fffff0;
+  /* White Background */
+  color: #333;
+}
+
+/* Class for my name */
+h1 {
+  font-family: 'Exo 2', sans-serif;
+  color: #222;
+  text-transform: uppercase;
+  font-size: 50px;
+}
+
+/* Class for page buttons */
+h2 {
+  font-family: 'Exo 2', sans-serif;
+  color: #222;
+  text-transform: uppercase;
+  font-size: 28px;
+}
+
+/* Class for big titles for content */
+h3 {
+  font-family: 'Exo 2', sans-serif;
+  color: #d35400;
+  text-transform: uppercase;
+  font-size: 48px;
+}
+
+/* Class for project titles */
+h4 {
+  font-family: 'Exo 2', sans-serif;
+  color: #222;
+  text-transform: uppercase;
+  font-size: 20px;
+  text-align: left;
+  margin-top: 10px;
+}
+
+/* Class for resume main headings */
+h5 {
+  font-family: 'Exo 2', sans-serif;
+  color: #222;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 24px;
+}
+
+/* Class for resume sub-headings */
+h6 {
+  font-family: 'Alegreya Sans', sans-serif;
+  color: #333;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Header Styles */
+header {
+  background-color: #fffff0;
+  padding: 0px 40px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 120px;
+}
+
+/* Navigation */
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.nav-left {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-left a {
+  text-decoration: none;
+}
+
+.nav-left a h2 {
+  display: inline-block;
+  /* Ensures inline placement for navigation items */
+}
+
+.nav-left a:hover h2 {
+  color: #555;
+  /* Hover effect */
+}
+
+.nav-right {
+  text-align: right;
+}
+
+.nav-right .site-title {
+  text-decoration: none;
+}
+
+.nav-right .site-title h1 {
+  display: inline-block;
+  /* Ensures inline placement for title */
+}
+
+.nav-right .site-title:hover h1 {
+  color: #555;
+  /* Hover effect */
+}
+
+/* Main Content */
+main {
+  padding: 20px;
+}
+
+/* Footer Styles */
+footer {
+  background-color: #000;
+  color: #fffff0;
+  padding: 10px 20px;
+}
+
+.contact-info a {
+  color: #fffff0;
+  text-decoration: none;
+  font-family: 'Alegreya Sans', sans-serif;
+  font-size: 28px;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+}
+
+/* Home Page Styling */
+.home-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  margin: 40px;
+}
+
+.home-text {
+  flex: 1;
+  font-size: 26px;
+  line-height: 1.8;
+  font-family: 'Alegreya Sans', sans-serif;
+  color: #333;
+}
+
+.home-text h1 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #d35400;
+}
+
+.home-image {
+  flex: 0 0 600px;
+  text-align: right;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+.home-image img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.bottom-images {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.bottom-images img {
+  width: calc(50% - 5px);
+}
+
+/* Projects Page Styles */
+.image-gallery {
+  column-count: 3;
+  /* Number of columns */
+  column-gap: 60px;
+  /* Spacing between columns */
+}
+
+.project-item {
+  display: inline-block;
+  /* Ensures items respect column layout */
+  margin-bottom: 30px;
+  /* Spacing between items vertically */
+}
+
+.project-item img {
+  width: 100%;
+  /* Scale image to fill the container width */
+  height: auto;
+  /* Maintain aspect ratio */
+  border-radius: 10px;
+  /* Rounds the corners of the image */
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.project-item img:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+/* Individual Project Page Styles */
+.project-content {
+  margin-top: 20px;
+}
+
+
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-details p {
+  font-family: 'Alegreya Sans', sans-serif;
+  color: #222;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.project-media img {
+  max-width: 95%;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Images Side-by-Side with Equal Height */
+.project-images {
+  display: flex;
+  gap: 20px;
+  /* Space between images */
+  margin-top: 20px;
+  align-items: stretch;
+  /* Ensures all child items have the same height */
+}
+
+.project-image {
+  flex: 1;
+  /* Ensures each image container gets equal width */
+  display: flex;
+  flex-direction: column;
+}
+
+
+.project-image img {
+  width: 100%;
+  /* Makes the image fill its container horizontally */
+  height: 100%;
+  /* Ensures image takes full container height */
+  object-fit: cover;
+  /* Crops or fits the image while maintaining aspect ratio */
+  border-radius: 10px;
+  /* Optional: Rounds the corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Adds a subtle shadow */
+}
+
+.image-caption {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.project-description {
+  flex: 1;
+}
+
+/* Back Button */
+.back-button {
+  margin-bottom: 20px;
+}
+
+.back-button a {
+  text-decoration: none;
+  color: #333;
+}
+
+.back-button a:hover {
+  text-decoration: underline;
+}
+
+/* Resume Page Styles */
+.resume-section p {
+  text-indent: 20px;
+  margin-top: 0;
+  margin-bottom: 0px;
+}

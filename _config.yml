@@ -1,0 +1,7 @@
+title: "My Portfolio"
+description: "Welcome to my portfolio website!"
+baseurl: "" # Leave empty for GitHub Pages
+url: "https://aks237.github.io"
+theme: minima
+plugins:
+  - jekyll-feed

@@ -4,13 +4,42 @@ title: Projects
 permalink: /projects/
 ---
 
-<div class="image-gallery">
-  {% for project in site.data.projects %}
-  <div class="project-item">
-    <a href="{{ project.url | relative_url }}">
-      <img src="{{ project.image | relative_url }}">
-    </a>
-    <h4>{{ project.title }}</h4>
-  </div>
-  {% endfor %}
-</div>
+<main>
+  <!-- Featured Projects Section -->
+  <section class="featured-projects">
+    <h3>Featured Projects</h3>
+    {% for project in site.data.projects %}
+    {% if project.featured %}
+    <div class="featured-project">
+      <a href="{{ project.url | relative_url }}">
+        <img src="{{ project.image | relative_url }}" alt="{{ project.title }}">
+      </a>
+      <div class="featured-project-text">
+        <a href="{{ project.url | relative_url }}">
+          <h4>{{ project.title }}</h4>
+        </a>
+        <p class="skills">{{ project.skills | join: ', ' }}</p>
+        <p class="description">{{ project.description }}</p>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </section>
+
+  <!-- Other Projects Section -->
+  <section class="other-projects">
+    <h3>Other Projects</h3> <!-- Section title -->
+    <div class="other-projects-grid">
+      {% for project in site.data.projects %}
+      {% unless project.featured %}
+      <div class="other-project-item">
+        <a href="{{ project.url | relative_url }}">
+          <img src="{{ project.image | relative_url }}" alt="{{ project.title }}">
+          <h4>{{ project.title }}</h4>
+        </a>
+      </div>
+      {% endunless %}
+      {% endfor %}
+    </div>
+  </section>
+</main>

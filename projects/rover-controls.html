@@ -2,7 +2,84 @@
 layout: project
 title: "Rover Controls"
 ---
+<h6>
+  ROS2, Python, OpenCV, Full Stack Robotics Development, Stereo Vision, Kinematics, Motor Control, CAN-FD
+</h6>
 
-<img src="{{ '/assets/images/CMR/controls/rover-cropped.jpg' | relative_url }}" alt="Rover Controls">
+<h5>Overview</h5>
+<p>The Cornell Mars Rover team builds complex and impressive mechanical systems which require robust electrical and
+  software
+  control stacks to perform reliably and support the development of complex, autonomous functionalities. This year, I
+  have implemented and validated a new <strong>control stack</strong> for the swerve drive system and 6 degree of
+  freedom arm on the
+  rover which utilizes a board built by MJBots to connect to the CAN-FD lines via USB from the onboard computer.
+  Utilizing this new control scheme, I have implemented inverse kinematics on the arm and developed a computer-vision
+  based arm homing sequence using Aruco markers, achieving sub-degree accuracy and removing the need for additional
+  hardware sensors.</p>
 
-<p>Arm and Drives controls.</p>
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1H9sPWj_R3KNoMXYlGF5Kiot5Ey6dPsRy/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1eZI4ACwM6FXa1cQcAFsdf74ye1hBGj_9/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<h5>High Level Arm Control Software Diagram</h5>
+<div class="project-image">
+  <img src="{{ '/assets/images/CMR/controls/arm_control_flowchart.png' | relative_url }}" alt="">
+</div>
+
+<p>
+  Having a consistent starting position within a degree of accuracy for the robot arm is crucial for forward kinematics
+  and advanced manipulation tasks. In order to achieve this every time the arm is operated, the arm controller node is
+  initialized in the homing state and the motors are locked. The arm Aruco node and ZED 2i node, which continuously
+  publishes the left and right images from the stereo vision camera (/zed/image_left and /zed/image_right), are started
+  before. When the arm homing begins, the arm Aruco node uses the Aruco library from OpenCV to process the left camera
+  image and determine the centerpoints of the markers on the arm. For each image received, an array containing the pixel
+  centerpoints of the markers along with the corresponding marker ID is published to the /zed/plane_pixels topic. The
+  zed node subscribes to this topic and, upon receiving the message, uses the built in function find_plane_at_hit and
+  computes the rotation of each marker, publishing the rotations of all markers in a single message to the topic
+  /zed/plane_angles. Once enough data points have been collected by the arm Aruco node, faulty detections are filtered
+  and the rest are averaged to compute the rotations needed to align each joint with the zero position.
+</p>
+
+<h5>Inverse Kinematics</h5>
+<div class="project-image">
+  <iframe src="https://drive.google.com/file/d/1cC5t-E_1gKyygMHLaW7DibDu2abtrH8d/preview" width="1280" height="720"
+    allow="autoplay" allowfullscreen>
+  </iframe>
+</div>
+<p>
+
+</p>
+
+<h5>High Level Drives Control Software Diagram</h5>
+<div class="project-image">
+  <img src="{{ '/assets/images/CMR/controls/drives_control_flowchart.png' | relative_url }}" alt="">
+</div>
+<p>
+
+</p>
+
+<h5>Motor Control</h5>
+<p>
+
+</p>
+
+<h5>Future Improvements</h5>
+<p>
+
+</p>
+
+<h5>Acknowledgements</h5>
+<p>
+
+</p>

@@ -3,7 +3,62 @@ layout: project
 title: "Realtime Musculoskeletal Analysis"
 ---
 
-<img src="{{ '/assets/images/Emprise/musculoskeletal/musculoskeletal.jpg' | relative_url }}"
-  alt="Realtime Musculoskeletal Analysis">
+<p>I am working on a project that leverages motion capture data to assist caregiving robots, such as robotic arms, in
+  aiding patients with mobility limitations. By analyzing motion capture data to estimate muscle tendon use, the project
+  aims to support safe autonomous limb repositioning for patients. This work is built within RCareWorld, a robotic
+  caregiving simulator developed in Unity by members of the EmPRISE Lab at Cornell University. It integrates Python for
+  control software development. The project highlights include
+  real-time streaming of motion capture data, musculoskeletal modeling, and live estimation of muscle activations. The
+  first step of the project involved streaming live motion capture data from MVN Live, the software used with our motion
+  capture hardware. This data was processed in MATLAB, transformed into Unity’s coordinate system, and streamed into the
+  Unity simulation using Python. This allowed the real-time mirroring of patient movements by a human model in
+  RCareWorld.</p>
 
-<p>Simulation of desert terrain of autonomous mission.</p>
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1NelI00AbrmUkDJajDvd96eOusGq7mDgx/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+    <p class="image-caption">Live Streaming Motion Capture Data into RCareWorld</p>
+  </div>
+</div>
+
+<p>
+  To enable meaningful analysis of patient movements, I integrated a musculoskeletal model into RCareWorld. This model
+  features around 300 muscle tendons, each containing nodes at offsets from different bones. The muscle-tendon mechanics
+  implement a Hill-type muscle model, capturing contractile, elastic, and series dynamics. Additionally, I built
+  software
+  to control and receive data from the muscle model in Python. Below is a visualization of
+  the muscle tendons and bones in the model and a video of the model in action, actuating the legs with a random set of
+  activations sent from Python.
+</p>
+
+<div class="project-images">
+  <div class="project-image">
+    <img src="{{ '/assets/images/Emprise/musculoskeletal/musculoskeletal.jpg' | relative_url }}" alt="">
+    <p class="image-caption">Muscle Tendons and Bones in the Model</p>
+  </div>
+
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1hWuYbEMfDNJcWTiaTRL6-ksIpBP6yxvz/preview" width="640" height="360"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+    <p class="image-caption">Random Leg Actuation using Muscle Tendons</p>
+  </div>
+</div>
+
+<p>
+  Using the live motion capture data, I developed a system for estimating muscle activations in real time. By solving
+  for the muscle torques that produce specific joint movements, this system minimizes a cost function to provide
+  realistic approximations of muscle activations. This work, visualized in Rerun, demonstrates the potential for
+  real-time musculoskeletal analysis.
+</p>
+
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1L5c1R9NvCTxBzYoxun7_xOnvKmXx7ZWD/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+    <p class="image-caption">Musculoskeletal Analysis in Rerun</p>
+  </div>
+</div>

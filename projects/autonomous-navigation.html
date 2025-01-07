@@ -1,0 +1,113 @@
+---
+layout: project
+title: "Autonomous Navigation"
+---
+<h6>
+  ROS2, Python, Gazebo, YOLOv8, Perception, Sensor Fusion, Localization, Planning and Control
+</h6>
+
+<h5>Overview</h5>
+
+<p>This is the work I have done so far in the 2024-2025 year leading the software development to
+  complete the autonomous mission in the annual University Rover Competition for Cornell’s Mars
+  Rover project team. The mission requires that the robot autonomously navigate through the desert
+  terrain in Utah to 7 GNSS coordinates, avoiding obstacles and performing various detection tasks
+  upon arrival at coordinates,. Teams are given a coordinates at the time of the mission, including the starting
+  coordinate. The first 2 coordinates the rover must simply drive within 3m of, the
+  next 3 coordinates the rover must locate an AR tag on a signpost within a 20m radius and navigate
+  within 2m of, and the last 2 coordinates the rover must identify and drive within 2m of a small object
+  on the ground. While no software existed for this mission at the start of this year, the rover used
+  to compete in last year's competition was assembled and ready to be used as a testing platform while the
+  new rover for this upcoming year’s competition is being designed and built.
+</p>
+
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1LroPuh6M5hcePmY8yiRtEeIbnujwPbx3/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<h5>High Level Software Diagram</h5>
+<div class="project-image">
+  <img src="{{ '/assets/images/CMR/autonomy/navigation_flowchart.png' | relative_url }}" alt="">
+</div>
+
+<p>
+</p>
+
+<h5>Simulation Environment</h5>
+
+<p>
+  To enable rapid testing
+  of software developed for this mission, I built a simulation in Gazebo that
+  interfaces with ROS (robot operating system), to test all functionalities of this mission. This simulation
+  includes the controls for the swerve drive system the rover uses and the data (including noise) from
+  the IMU, GPS, and depth camera sensors utilized in this mission. In addition, the
+  simulation environment contains randomly generated terrains resembling the Utah desert including hills,
+  rocks, bushes, and the objects specific to the autonomy mission.
+</p>
+
+<div class="project-images">
+  <!-- Sim terrain screenshot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/sim-screenshot.jpg' | relative_url }}" alt="">
+    <p class="image-caption">Simulation terrain - cylinders help visualize target GNSS coordinates</p>
+  </div>
+
+  <!-- Sim AR Tags screenshot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/ar_tags_sim.png' | relative_url }}" alt="">
+    <p class="image-caption">Mission AR tags</p>
+  </div>
+</div>
+
+<!-- Drive to Coord Sim -->
+<div>
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1UlAVFJU_S5b3BpZY73t5A0E24NnJb6x6/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<p>
+</p>
+
+<h5>Perception and Localization</h5>
+
+<div>
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1F11CnuS1OFJkzDSA7mzF0BHSvY62vFPS/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<h5>Path Planning and Control</h5>
+
+<div class="project-images">
+  <!-- Path planning screenshot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/path_planning.png' | relative_url }}" alt="">
+  </div>
+</div>
+
+<p>
+</p>
+
+<h5>Object Recogntion</h5>
+
+<p>
+</p>
+
+<h5>Future Improvements</h5>
+
+<p>
+</p>
+
+<h5>Acknowledgements</h5>
+
+<p>
+</p>

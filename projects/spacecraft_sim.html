@@ -3,6 +3,277 @@ layout: project
 title: "Pulsed Thruster Maneuver Simulation"
 ---
 
-<img src="{{ '/assets/images/spacecraft_sim/spacecraft_thumbnail.png' | relative_url }}" alt="Spacecraft Simulation">
+<!-- Include MathJax -->
+<script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" async id="MathJax-script"
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-<p>Simulation of a pulsed thruster maneuver to stop a spacecraft from spinning.</p>
+<h6>
+  MATLAB, Optimal Control, Spacecraft Attitude Dynamics, System Modeling and Simulation
+</h6>
+
+<h5>Overview</h5>
+
+<p>For the final project of my Spacecraft Attitude Dynamics, Estimation, and Control class, I developed and tested a
+  linear quadratic regulator (LQR) in a MATLAB simulation I built to control spacecraft thrusters, performing a maneuver
+  that negates an initial angular velocity. Using values provided in class (constants listed at the bottom of the page)
+  to model the rigid-body dynamics of a spacecraft with four fixed thrusters, I experimented with several different
+  control methodologies and achieved the best performance by using a dynamically weighted LQR controller. By adjusting
+  the weights for error about each principal axis proportional to the change in error from the previous timestep, the
+  controller performs well for both large and small errors in desired angular velocity.
+</p>
+
+<div class="project-images">
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1uJItiLQ7DZE2kcMI2TFz37QxhXQLee5-/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<h5>Dynamics</h5>
+
+<p>
+  The rigid-body dynamics of the spacecraft are modeled using its mass, inertial matrix, and center of mass. At each
+  timestep, the new orientation and angular velocity of the spacecraft are computed (linear kinematics are modeled as
+  well). The four thrusters are mounted at fixed positions (\( {}^{B}\mathbf{r_a} \), \( {}^{B}\mathbf{r_b} \), \(
+  {}^{B}\mathbf{r_c} \), \( {}^{B}\mathbf{r_d} \)) along constant unit vectors (\( {}^{B}\mathbf{f_a} \), \(
+  {}^{B}\mathbf{f_b} \), \(
+  {}^{B}\mathbf{f_c} \), \( {}^{B}\mathbf{f_d} \)) in the body
+  frame of the spacecraft. When
+  a thruster fires with force \( F \), it produces the following torque on the spacecraft:
+</p>
+
+<p>
+  \[
+  \tau_i = ({}^{B}\mathbf{r_i} - {}^{B}\mathbf{r}) \times (F \cdot {}^{B}\mathbf{f_a})
+  \]
+</p>
+
+<p>
+  The total torque acting on the spacecraft is computed by summing the torques from each thruster:
+</p>
+
+<p>
+  \[
+  \tau = \sum_{i=a,b,c,d} \tau_i
+  \]
+</p>
+
+<p>
+  Using Euler’s equation, the angular acceleration of the spacecraft can be computed:
+</p>
+
+<p>
+  \[
+  \tau = {}^{B}\mathbf{I} \frac{d}{dt} \omega_{B/N} + \omega_{B/N} \times ({}^{B}\mathbf{I} \cdot
+  \omega_{B/N})
+  \]
+</p>
+
+<p>
+  \[
+  {}^{B}\frac{d}{dt} \omega_{B/N} = {}^{B}\mathbf{I}^{-1} (\tau - \omega_{B/N} \times
+  ({}^{B}\mathbf{I} \omega_{B/N}))
+  \]
+</p>
+
+<p>
+  At each timestep of the simulation, the new angular velocity is computed by multiplying the angular acceleration and
+  the duration of the step and adding it to the current angular velocity:
+</p>
+
+<p>
+  \[
+  \omega_{\text{new } B/N} = \omega_{\text{current } B/N} + \left( {}^{B} \frac{d}{dt} \omega_{B/N} \Delta t
+  \right)
+  \]
+</p>
+
+<p>
+  The axis and angle of rotation for each timestep can be computed from the current angular velocity:
+</p>
+
+<p>
+  \[
+  a = \begin{bmatrix} a_1 \\ a_2 \\ a_3 \end{bmatrix}
+  = \frac{\omega_{B/N}}{\text{mag}(\omega_{B/N})}
+  = \frac{1}{\sqrt{\omega_x^2 + \omega_y^2 + \omega_z^2}} \begin{bmatrix} \omega_x \\ \omega_y \\ \omega_z
+  \end{bmatrix}
+  \]
+</p>
+
+<p>
+  \[
+  \phi = \Delta t \cdot \sqrt{\omega_x^2 + \omega_y^2 + \omega_z^2}
+  \]
+</p>
+
+<p>
+  The orientation of the spacecraft at each timestep is represented with a quaternion, \( q \), which is updated using
+  the axis and angle of rotation.
+</p>
+
+<p>
+  \[
+  \Delta q = \begin{bmatrix} \cos(\phi/2) \\ \sin(\phi/2) \cdot a_1 \\ \sin(\phi/2) \cdot a_2 \\ \sin(\phi/2) \cdot a_3
+  \end{bmatrix}
+  \]
+</p>
+
+<p>
+  \[
+  q_{\text{new}} = \Delta q \otimes q_{\text{current}}
+  \]
+</p>
+
+<h5>Controller</h5>
+
+<p>
+  To achieve zero angular velocity, an LQR (Linear Quadratic Regulator) is used to control the thruster activations.
+  The state space representation of the model is as follows, where \( u \) is a \(4 \times 1\) vector of the thruster
+  activations:
+</p>
+
+<p>
+  \[
+  {}^{B} \frac{d}{dt} \omega_{B/N} = A \omega_{B/N} + B u
+  \]
+</p>
+
+<p>
+  Using Euler’s equation, the following state-space representation can be constructed at each timestep the thrusters are
+  pulsed:
+</p>
+
+<p>
+  \[
+  {}^{B} \frac{d}{dt} \omega_{B/N} = {}^{B}I^{-1} \tau - {}^{B}I^{-1} \omega_{B/N} \times
+  ({}^{B}I
+  \omega_{B/N})
+  \]
+</p>
+
+<p>
+  \[
+  A = {}^{B} I^{-1} (\omega_{B/N}) \times {}^{B} I \omega_{B/N}
+  \]
+</p>
+
+<p>
+  \[
+  B = {}^{B} I^{-1} \tau
+  \]
+</p>
+
+<p>
+  Thruster unit torques is a \(3 \times 4\) matrix where each column represents the torque produced in the body frame of
+  the spacecraft by \( 1N \) of force from a thruster:
+</p>
+
+<p>
+  \[
+  \begin{bmatrix} \tau_{i1} \\ \tau_{i2} \\ \tau_{i3} \end{bmatrix}
+  = ({}^{B} r_i - {}^{B} r) \times (1N \cdot {}^{B} f_a)
+  \]
+</p>
+
+<p>
+  The LQR minimizes the following cost function:
+</p>
+
+<p>
+  \[
+  J = \int_0^{\infty} (\omega^T Q \omega + u^T R u) dt
+  \]
+</p>
+
+<p>
+  \( Q \) is a \(3 \times 3\) diagonal matrix representing the cost of errors in the angular velocity, and \( R \) is
+  the \(4 \times 4\) identity matrix representing the cost of thruster efforts. This helps reduce the thruster effort
+  used in the maneuver. The values of \( Q \) are dynamically adjusted at each timestep to weight the error for each
+  angular velocity
+  component based on how much the error was reduced from the previous timestep. This helps compensate for less
+  controllable axes. The resultant gain matrix, \( K \), is multiplied by the current omega error to produce the desired
+  thruster
+  activations. Each activation is then bounded between \( 0N \) and \( 2N \), the maximum allowable force for each
+  thruster. The controller is implemented using MATLAB’s built-in \( lqr(A, B, Q, R) \) function.
+</p>
+
+<h5>Simulation</h5>
+<p>The timestep for the simulation was 0.1 seconds. At each step, the state of the spacecraft is updated using the above
+  equations. To make the maneuver a pulsed maneuver, the LQR controller is only implemented every 5th timestep, making
+  the
+  “on time” of the maneuver one fifth of the total time. The simulation is visualized on a plot and recorded to produce
+  the animation seen above. Additionally, the angular velocities and thruster activations are stored during the
+  simulation
+  period, producing the following plots:</p>
+
+<div class="project-images">
+  <!-- Omegas plot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/spacecraft_sim/graphs/omegas.jpg' | relative_url }}" alt="">
+  </div>
+
+  <!-- Activations plot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/spacecraft_sim/graphs/thrusters.jpg' | relative_url }}" alt="">
+  </div>
+</div>
+
+<h5>Constants</h5>
+<p>Mass</p>
+<p>
+  \[
+  \mathbf{m} = 1000 \text{ kg}
+  \]
+</p>
+
+<p>Inertial Matrix</p>
+
+<p>
+  \[
+  {}^{B}\mathbf{I} =
+  \begin{bmatrix}
+  3011.259436 & 204.0129860 & 81.61249261 \\
+  204.0129860 & 833.6214143 & -285.6254786 \\
+  81.61249261 & -285.6254786 & 3564.119152
+  \end{bmatrix} \, \text{kg} \cdot \text{m}^2
+  \]
+</p>
+
+<p>Center of Mass</p>
+<p>
+  \[
+  {}^{B}\mathbf{r} = \begin{bmatrix} 0.02 \\ -0.01 \\ 1 \end{bmatrix} \text{m}
+  \]
+</p>
+
+<p>Initial Angular Velocity</p>
+<p>
+  \[
+  \omega_{B/N} = \begin{bmatrix} 0.1 \\ 0.2 \\ 0.05 \end{bmatrix} \text{rad/sec}
+  \]
+</p>
+
+<p>Thruster Positions</p>
+
+<p>
+  \[
+  {}^{B}\mathbf{r_a} = \begin{bmatrix} 0.5 \\ -0.5 \\ 0.0 \end{bmatrix} \text{m }
+  \ {}^{B}\mathbf{r_b} = \begin{bmatrix} 0.5 \\ 0.5 \\ 0.0 \end{bmatrix} \text{m }
+  \ {}^{B}\mathbf{r_c} = \begin{bmatrix} -0.5 \\ -0.5 \\ 0.0 \end{bmatrix} \text{m }
+  \ {}^{B}\mathbf{r_d} = \begin{bmatrix} -0.5 \\ 0.5 \\ 2.0 \end{bmatrix} \text{m }
+  \]
+</p>
+
+<p>Thruster Unit Vectors</p>
+
+<p>
+  \[
+  {}^{B}\mathbf{f_a} = \frac{1}{\sqrt{2}} \begin{bmatrix} -1 \\ 1 \\ 0 \end{bmatrix}
+  \ {}^{B}\mathbf{f_b} = \begin{bmatrix} 0 \\ -1 \\ 0 \end{bmatrix}
+  \ {}^{B}\mathbf{f_c} = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}
+  \ {}^{B}\mathbf{f_d} = \begin{bmatrix} 0 \\ 0 \\ -1 \end{bmatrix}
+  \]
+</p>

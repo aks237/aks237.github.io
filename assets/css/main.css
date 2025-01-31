@@ -322,6 +322,21 @@ main {
   align-items: stretch;
 }
 
+.equation-image {
+  float: left;
+  /* Aligns the image to the left */
+  margin-right: 20px;
+  /* Adds space between the image and surrounding text */
+  margin-bottom: 10px;
+  /* Optional: Adds spacing below the image */
+  height: auto;
+  /* Allows customizable height */
+  width: auto;
+  /* Allows customizable width */
+  max-width: 100%;
+  /* Ensures image responsiveness */
+}
+
 .project-image {
   flex: 1;
   display: flex;

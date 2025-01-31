@@ -16,7 +16,14 @@
   url: "/projects/musculoskeletal.html"
   image: "/assets/images/Emprise/musculoskeletal/thumbnail.png"
   skills: "C++, Python, MATLAB, Unity, Realtime Optimization, Inverse Dynamics, Musculoskeletal Modeling"
-  description: "Built a real-time musculoskeletal analysis tool for safer assistive robotics."
+  description: "Building a real-time musculoskeletal analysis tool for safer assistive robotics."
+  featured: true
+
+- title: "Pulsed Thruster Maneuver Simulation"
+  url: "/projects/spacecraft_sim.html"
+  image: "/assets/images/spacecraft_sim/spacecraft_thumbnail.png"
+  skills: "MATLAB, Optimal Control, Spacecraft Attitude Dynamics, System Modeling and Simulation"
+  description: "Built a simulation and LQR controller to model the trajectory of a spacecraft performing a maneuver to stop spinning."
   featured: true
 
 - title: "Robot Arm Typing"
@@ -24,13 +31,6 @@
   image: "/assets/images/CMR/typing/thumbnail.png"
   skills: "ROS2, Python, YOLOv8, OpenCV, Perception, Sensor Fusion, Planning and Control"
   description: "Programming a robot arm to type on a keyboard using computer vision and online motion planning."
-  featured: true
-
-- title: "Pulsed Thruster Maneuver Simulation"
-  url: "/projects/spacecraft_sim.html"
-  image: "/assets/images/spacecraft_sim/spacecraft_thumbnail.png"
-  skills: "MATLAB, Optimal Control, Orbital Mechanics, Spacecraft Dynamics"
-  description: "Built a simulation and LQR controller to model the trajectory of a spacecraft performing a maneuver to stop spinning."
   featured: true
 
 - title: "Reconfigurable Drones"

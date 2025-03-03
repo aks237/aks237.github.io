@@ -63,20 +63,7 @@ title: "Autonomous Navigation"
   </div>
 </div>
 
-<!-- Drive to Coord Sim -->
-<div>
-  <div class="project-image">
-    <iframe src="https://drive.google.com/file/d/1UlAVFJU_S5b3BpZY73t5A0E24NnJb6x6/preview" width="1280" height="720"
-      allow="autoplay" allowfullscreen>
-    </iframe>
-  </div>
-</div>
-
-<p>
-</p>
-
-<h5>Perception and Localization</h5>
-
+<!-- Sim Terrain Video with RVIZ -->
 <div>
   <div class="project-image">
     <iframe src="https://drive.google.com/file/d/1F11CnuS1OFJkzDSA7mzF0BHSvY62vFPS/preview" width="1280" height="720"
@@ -85,7 +72,34 @@ title: "Autonomous Navigation"
   </div>
 </div>
 
-<h5>Path Planning and Control</h5>
+<p>
+</p>
+
+<h5>State Machine</h5>
+
+<p>
+  The state machine is the central node of the autonomy software, managing the rover's state and transitioning between
+  states when the current mission objective has been accomplished. The node sends target positions to the path
+  planner and receives the current position of the rover from the localization node.
+</p>
+
+<p>
+  Full writeup coming soon!
+</p>
+
+<h5>Localization</h5>
+
+<p>
+  The rover has an RTK GPS system to localize itself, utilizing correction signals sent by the basestation via TCP to
+  the rover to achieve a GPS reading accurate to within one centimeter. The orientation of the rover is determined by
+  the onboard IMU.
+</p>
+
+<p>
+  Full writeup coming soon!
+</p>
+
+<h5>Path Planning</h5>
 
 <div class="project-images">
   <!-- Path planning screenshot -->
@@ -93,15 +107,37 @@ title: "Autonomous Navigation"
     <img src="{{ '/assets/images/CMR/autonomy/path_planning.png' | relative_url }}" alt="">
   </div>
 </div>
-
 <p>
+  The path planning node receives a target position from the state machine and uses the A* algorithm to plan a path of
+  waypoints on the current global costmap.
+</p>
+<p>
+  Full writeup coming soon!
 </p>
 
-<h5>Object Recogntion</h5>
+<h5>Control</h5>
 
 <p>
+  The control node sends drive commands to the swerve drive system utilizing a Stanley controller to follow the planned
+  path. Occasionally, the point turning ability of the swerve drive system is used when sharp turns are needed.
 </p>
 
+<p>
+  Full writeup coming soon!
+</p>
+
+<h5>Costmap Generation</h5>
+
+<p>
+  The costmap node stores the current global costmap and updates it, fusing the latest data from the localization node
+  and the ZED 2i stereo camera. The ZED's point cloud data and built-in ground plane detection feature are used to
+  determine traversable regions based on the current line of sight of the rover. An update of the current global costmap
+  is sent to the path planner node at a frequency of 10 Hz.
+</p>
+
+<p>
+  Full writeup coming soon!
+</p>
 <h5>Future Improvements</h5>
 
 <p>

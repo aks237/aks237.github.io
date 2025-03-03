@@ -8,17 +8,15 @@ title: "Autonomous Navigation"
 
 <h5>Overview</h5>
 
-<p>This is the work I have done so far in the 2024-2025 year leading the software development to
-  complete the autonomous mission in the annual University Rover Competition for Cornell’s Mars
-  Rover project team. The mission requires that the robot autonomously navigate through the desert
-  terrain in Utah to 7 GNSS coordinates, avoiding obstacles and performing various detection tasks
-  upon arrival at coordinates,. Teams are given a coordinates at the time of the mission, including the starting
-  coordinate. The first 2 coordinates the rover must simply drive within 3m of, the
-  next 3 coordinates the rover must locate an AR tag on a signpost within a 20m radius and navigate
-  within 2m of, and the last 2 coordinates the rover must identify and drive within 2m of a small object
-  on the ground. While no software existed for this mission at the start of this year, the rover used
-  to compete in last year's competition was assembled and ready to be used as a testing platform while the
-  new rover for this upcoming year’s competition is being designed and built.
+<p>This is the work I have done so far in the 2024-2025 year developing software to complete the autonomous mission in
+  the annual University Rover Competition for Cornell’s Mars Rover project team. The mission requires that the rover
+  autonomously navigate through the desert terrain in Utah to 7 GNSS coordinates provided at the start of the mission,
+  avoiding obstacles and performing various detection tasks. While no software existed for this mission at the start of
+  this year, the rover used to compete in last year's competition was assembled and ready to be used as a testing
+  platform while the new rover for this upcoming year’s competition was being designed and built. I began by developing
+  a simulation in Gazebo to be able to quickly prototype and develop an initial navigation stack from the ground-up.
+  Throughout the year, I have iteratively improved upon all parts of the system, which includes individual nodes for
+  state management, localization, costmap generation, path-planning, and control.
 </p>
 
 <div class="project-images">

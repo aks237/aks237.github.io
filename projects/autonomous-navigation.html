@@ -2,6 +2,13 @@
 layout: project
 title: "Autonomous Navigation"
 ---
+
+
+<!-- Include MathJax -->
+<script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" async id="MathJax-script"
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <h6>
   ROS2, Python, Gazebo, YOLOv8, Perception, Sensor Fusion, Localization, Planning and Control
 </h6>
@@ -21,19 +28,298 @@ title: "Autonomous Navigation"
 
 <div class="project-images">
   <div class="project-image">
-    <iframe src="https://drive.google.com/file/d/1R0-3mOJ33xw-Oh0DX_xlMnWDw05o0yKl/preview" width="1280" height="720"
+    <iframe src="https://drive.google.com/file/d/1XqwnJGw4GtMwKlG10Sg3UllUTtGHnYKj/preview" width="1280" height="720"
       allow="autoplay" allowfullscreen>
     </iframe>
   </div>
 </div>
 
-<h5>High Level Software Diagram</h5>
+<h5>High Level System Overview and State Machine</h5>
 <div class="project-image">
-  <img src="{{ '/assets/images/CMR/autonomy/navigation_flowchart.png' | relative_url }}" alt="">
+  <img src="{{ '/assets/images/CMR/autonomy/navigation_flowchart_simple.png' | relative_url }}" alt="">
 </div>
 
 <p>
+  This system is built on ROS2 and based on Nav2, the industrial framework for autonomous mobile robots. The diagram
+  above depicts the flow of information between the ROS nodes. The central logic for the system is in the state machine
+  node, which determines what the next GNSS coordinate is, whether a target has been reached, and what autonomy game
+  objects to look for at certain coordinates. The state machine node sends targets to the path planner node, which plans
+  a path (or validates the current one) using localization estimates and a costmap of the environment. The planned path
+  is sent to the controller, which generates high-level driving commands to follow the path. The drives commands are
+  converted to motor commands in a designated drives node, which sends them through a CAN FD line connected to all eight
+  motor controllers in the rover’s swerve drive system. The localization node receives feedback from the drives node,
+  along with data from the rover’s sensor suite of a ZED 2i stereo vision camera, an RTK GPS system, and an IMU, to
+  produce precise localization and orientation estimates.
 </p>
+
+<h5>Localization with RTK GPS and EKF</h5>
+
+<p>
+  In order to navigate through fields of obstacles, the rover must have a precise localization estimate in order to
+  generate a global costmap, plan and follow paths, and determine when it has reached its goal. The navigation
+  implements an
+  Extended Kalman Filter (EKF), fusing visual inertial odometry (VIO) tracking data from the ZED stereo vision camera,
+  feedback from motor controllers, IMU data, and a real time kinematic (RTK) GPS system. RTK GPS utilizes correction
+  signals sent by the base station via TCP to the rover to achieve a GPS reading accurate to within one centimeter. This
+  is done by computing the real-time corrections for satellite signals at the base station, which is at a known, fixed
+  position, and sending them to the rover through a TCP socket. The rover ingests these correction signals, sent in the
+  RTCM (Radio Technical Commission for Maritime Services) message format, to correct its current localization reading.
+
+</p>
+
+<div class="project-images">
+  <!-- RTK diagram -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/rtk_diagram.png' | relative_url }}" alt="">
+    <p class="image-caption">Visualizing the RTCM correction signal stream sent from the base station to the rover
+      Source: ZED-F9P Integration Manual, SparkFun, p. 11. (<a
+        href="https://cdn.sparkfun.com/assets/learn_tutorials/8/5/6/ZED-F9P_Integration_Manual.pdf"
+        target="_blank">Source</a>)</p>
+  </div>
+
+  <!-- RTK board -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/gps_board.png' | relative_url }}" alt="">
+    <p class="image-caption">The RTK GPS module used on the rover and base station, Source:
+      <a href="https://www.sparkfun.com/sparkfun-gps-rtk-sma-breakout-zed-f9p-qwiic.html" target="_blank">SparkFun</a>
+    </p>
+  </div>
+</div>
+
+<p>The purpose of the filter is so the rover can still have highly precise localization estimates even if it navigates
+  far enough to the point where correction signals cannot be received from the base station (~1km). </p>
+<h6>EKF Implementation</h6>
+<p>The state vector is defined as as: </p>
+<p> \[ \mathbf{x} = \begin{bmatrix} x \\ y \\ \theta \end{bmatrix} \] </p>
+<p> where \(x\) and \(y\) represent the rover's displacement in the global coordinate frame measured in meters (with
+  \(x\) pointed north and \(y\) pointed west) from the starting coordinate, and \(\theta\) is the rover's heading (yaw).
+  The filter uses an expected velocity derived from motor controller feedback to predict changes to the state and
+  measurements from the ZED camera, IMU, and GPS to update it. To account for latency between data sent between nodes,
+  all data is timestamped at the time of measurement. The filter ensures that data used in corresponding prediction and
+  update steps are measured within 0.1 seconds of each other.
+</p>
+<h6>Prediction Step</h6>
+<p>Motor feedback from the drives node is converted using swerve drive kinematics to produce an expected velocity vector
+  \(\begin{bmatrix}v_x & v_y & \omega\end{bmatrix}^\top\) in the rover’s local
+  (body) frame. To incorporate
+  this into the global state estimate, the filter transforms the local velocity into the global frame using the current
+  heading estimate: </p>
+<p> \[ \begin{bmatrix}v_{\text{global}_x} \\[6pt]v_{\text{global}_y}\end{bmatrix} = \begin{bmatrix} \cos(\theta) &
+  -\sin(\theta) \\ \sin(\theta) & \cos(\theta) \end{bmatrix} \begin{bmatrix}v_x \\[6pt]v_y\end{bmatrix} \] </p>
+<p>For each step of the filter, the expected velocity of the rover is used to predict the new state and covariance:</p>
+<p> \[ \mathbf{x}_{k \mid k-1} = \mathbf{x}_{k-1 \mid k-1} + \begin{bmatrix} v_{\text{global}_x} \, \Delta t \\
+  v_{\text{global}_y} \, \Delta t \\ \omega \, \Delta t \end{bmatrix} \] </p>
+<p>
+  \[
+  \mathbf{P}_{k \mid k-1} = \mathbf{F}_k \, \mathbf{P}_{k-1 \mid k-1} \, \mathbf{F}_k^\top + \mathbf{Q}
+  \]
+</p>
+<p>
+  \[
+  \mathbf{F}_k =
+  \begin{bmatrix}
+  1 & 0 & -v_x \Delta t \sin(\theta) - v_y \Delta t \cos(\theta) \\
+  0 & 1 & v_x \Delta t \cos(\theta) - v_y \Delta t \sin(\theta) \\
+  0 & 0 & 1
+  \end{bmatrix}
+  \]
+</p>
+
+<p>
+  \(\mathbf{x}_{k \mid k-1}\) represents the predicted state
+  estimate at time step \(k\), based on the previous state at \(k-1\); \(\mathbf{P}_{k \mid k-1}\) is the predicted
+  state covariance matrix (uncertainty in the estimate); \( \
+  \mathbf{F}_k = \frac{\partial f}{\partial \mathbf{x}}
+  \) and is the Jacobian of the motion model which is used to propagate uncertainty; and \(\mathbf{Q}\) is a constant
+  process
+  noise covariance matrix, modeling uncertainty in the motion model (helping to account for things like wheel slip) and
+  motor controller feedback.
+</p>
+
+<h6>Update Step</h6>
+<p>
+  Each sensor provides a measurement vector \(\mathbf{z}_k\) and has a Jacobian \(\mathbf{H}_k =
+  \frac{\partial h}{\partial \mathbf{x}}\) to map the measurement onto the state vector \(\mathbf{x}_k = \begin{bmatrix}
+  x & y & \theta
+  \end{bmatrix}^\top\).
+</p>
+
+<p><strong>1. ZED Stereo Camera (Visual-Inertial Odometry)</strong></p>
+<p>
+  \[
+  \mathbf{z}_k^{\text{ZED}} =
+  \begin{bmatrix}
+  \Delta x + \mathbf{x}_{k-1}(0)\\
+  \Delta y + \mathbf{x}_{k-1}(1)\\
+  \theta
+  \end{bmatrix},
+  \quad
+  \mathbf{H}_k^{\text{ZED}} =
+  \begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+  0 & 0 & 1
+  \end{bmatrix}
+  \]
+</p>
+
+<p><strong>2. IMU (Yaw Heading Only)</strong></p>
+<p>
+  \[
+  \mathbf{z}_k^{\text{IMU}} =
+  \begin{bmatrix}
+  \theta
+  \end{bmatrix},
+  \quad
+  \mathbf{H}_k^{\text{IMU}} =
+  \begin{bmatrix}
+  0 & 0 & 1
+  \end{bmatrix}
+  \]
+</p>
+
+<p><strong>3. RTK GPS (Latitude Longitude Converted to North and West Displacement from the Starting
+    Coordinate)</strong></p>
+<p>
+  \[
+  \mathbf{z}_k^{\text{GPS}} =
+  \begin{bmatrix}
+  x \\
+  y
+  \end{bmatrix},
+  \quad
+  \mathbf{H}_k^{\text{GPS}} =
+  \begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & 1 & 0
+  \end{bmatrix}
+  \]
+</p>
+
+
+<p> For each new measurement \(\mathbf{z}_k\) received, the EKF computes the Kalman Gain
+  \(\mathbf{K}\) and corrects both the state and covariance: </p>
+<p> \[ \mathbf{y}_k = \mathbf{z}_k - h(\mathbf{x}_{k \mid k-1}) \] </p>
+<p> \[ \mathbf{S}_k = \mathbf{H}_k \, \mathbf{P}_{k \mid k-1} \, \mathbf{H}_k^\top + \mathbf{R} \] </p>
+<p> \[ \mathbf{K}_k = \mathbf{P}_{k \mid k-1} \, \mathbf{H}_k^\top \, \mathbf{S}_k^{-1} \] </p>
+<p> \[ \mathbf{x}_{k \mid k} = \mathbf{x}_{k \mid k-1} + \mathbf{K}_k \, \mathbf{y}_k \] </p>
+<p> \[ \mathbf{P}_{k \mid k} = (\mathbf{I} - \mathbf{K}_k \, \mathbf{H}_k) \, \mathbf{P}_{k \mid k-1} \] </p>
+<p> Here, \(\mathbf{R}\) is the measurement covariance, which is dynamically updated from the GPS and ZED with each
+  measurement
+  taken and set to a constant for the IMU. This update incorporates all available measurements to refine
+  the rover’s \([x, y, \theta]\) estimate. </p>
+<p> By combining prediction from swerve drive kinematics and continual updates from camera odometry, IMU, and
+  GPS, the filter provides a precise state estimate for autonomous navigation even without base station correction
+  signals.</p>
+
+<h5>Costmap Generation</h5>
+
+<p>
+  The costmap node generates a 2D discretized grid of 0.5 meter squares that is used for the planner to search for a
+  path to the current goal. Each cell in the global costmap has a cost bounded between 0 and 100, with a higher cost
+  indicating a region that is more likely to contain an obstacle. It is continuously updated with data from the ZED 2i
+  stereo camera and the localization node received within 0.1 seconds of each other, transforming depth data from the
+  robot frame into the global frame. The ZED's point cloud data and built-in ground plane detection feature are used to
+  determine traversable regions based on the current line of sight of the rover.
+</p>
+
+
+<div class="project-images">
+  <!-- Costmap image -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/costmap.png' | relative_url }}" alt="">
+    <p class="image-caption">Visualization of Costmap and Ground Plane Bounding from Current View of Rover</p>
+  </div>
+</div>
+
+<p>
+  To parse point cloud data, the node uses a simple height threshold that increments the cost of a cell if it contains a
+  point outside of a certain height threshold and does not fall within the current ground plane estimate. Any cells that
+  fall within the ground plane polygon are decremented by 1. Cells are linearly decayed over time to help mitigate
+  faulty detections and reduce the size of the costmap sent. The current global costmap is sent to the path planner node
+  at a frequency of 5 Hz, excluding any cells with a cost of 0.
+</p>
+
+<h5>Path Planning and Smoothing</h5>
+
+<p>The planner node computes sets of waypoints on the global costmap from the rover's current position to a target
+  position received from the state machine node, converted into 2D coordinates. </p>
+
+<div class="project-images">
+  <!-- Path planning simulation screenshot -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/path_planning.png' | relative_url }}" alt="">
+    <p class="image-caption">Path Planned in simulation from (0m,0m) to (10m,0m)</p>
+  </div>
+</div>
+<p> The node employs a customized version
+  of the A* path planning algorithm on the most recent grid received from the costmap node. Each cell in the grid
+  has a value from 1 to 100 representing how likely it is to contain an obstacle. The planner takes both straight-line
+  distance
+  to the goal and these cell costs into account when searching for a path—summing an overall.</p>
+<p> The node begins by defining a local 25m search region around the rover to limit
+  how far it attempts to plan in a single iteration. Within this region, A* builds candidate paths, prioritizing paths
+  based on a
+  heuristic function that combines: </p>
+<ul>
+  <li><strong>Distance</strong>: Straight-line distance from the latest node </li>
+  <li><strong>Cost Weight</strong>: Penalizes traveling through grid cells that have a high cost themselves or neighbor
+    cells with a high cost.</li>
+</ul>
+<p> Once a path is identified, the planner stores the sequence of waypoints that are sent to the controller node. These
+  waypoints, starting at the rover's current position, are
+  continuously checked to 1. see if the path is still valid, and 2. if the rover has reached the next one. If any
+  portion of the path becomes invalid (generally because a new obstacle is parsed into the costmap), the path is
+  recalculated from the last known good position. This continuous checking and re-planning ensures the rover remains
+  robust to new information received during navigation. </p>
+<p> Following path generation, a smoothing function is applied to remove waypoints that are colinear or nearly colinear.
+  This reduces the number of waypoints sent to the controller, making path following much smoother. The smoothing
+  function implements simplified version of the <a href="https://en.wikipedia.org/wiki/Ramer–Douglas–Peucker_algorithm"
+    target="_blank">Ramer–Douglas–Peucker (RDP)</a>
+  algorithm. This takes the initially dense path from A* and iteratively discards waypoints that lie on or near the
+  straight line formed by points further along in the path. As a result, the path is streamlined while retaining the
+  necessary contours to avoid obstacles. </p>
+
+<h5>Control</h5>
+
+<p>
+  The control node receives waypoints from the planner and a pose estimate from the localization node. It sends commands
+  to the drives node in the form of ackerman steering commands, with a steer angle for the front two wheels and a
+  velocity, and point turns, with an angular velocity for the rover to turn at. The drives node then converts these to
+  CAN FD messages to send through the CAN line that is connected to all 8 motor controllers in our drives system (4 for
+  swerve and 4 for drives). The reason for not utilizing swerve drive to move laterally during autonomous navigation is
+  so that the rover is always facing where it is driving. This way, obstacles that may have been not detected previously
+  have a higher chance of being seen, reducing the risk of collisions. Initially, I implemented a simple control law to
+  follow waypoints in simulation by using ackerman steering when the rover had a heading error of less than 45 degrees
+  and otherwise turning in place. However, after observing jittery, inefficient motion in simulation, I instead
+  implemented a Stanley controller, first developed by Stanford for their self-driving car in the DARPA Grand Challenge
+  in 2005.
+</p>
+
+<div class="project-images">
+  <!-- Stanley Controller image -->
+  <div class="project-image">
+    <img src="{{ '/assets/images/CMR/autonomy/stanley_controller.png' | relative_url }}" alt="">
+    <p class="image-caption">Stanley Control Law for Waypoint Following, Source:
+      <a href="https://medium.com/@jaimin-k/longitudinal-lateral-control-for-autonomous-vehicles-carla-simulator-c045918816bd"
+        target="_blank">Medium</a>
+    </p>
+  </div>
+</div>
+
+<p>The steering angle for the rover is determined by a combination of its current heading error and its distance from
+  the current path segment. When the controller computes a steering angle of greater than 45 degrees, it sends a point
+  turn command to the drives node instead. Below is a video of path following in simulation before and after
+  implementing the Stanley controller, demonstrating the increase in smoothness for waypoint following.</p>
+
+<!-- Before and after Stanely controller in sim -->
+<div>
+  <div class="project-image">
+    <iframe src="https://drive.google.com/file/d/1lz9eohJ4V757X2RCTOUwyz6dIrmlmTCY/preview" width="1280" height="720"
+      allow="autoplay" allowfullscreen>
+    </iframe>
+  </div>
+</div>
 
 <h5>Simulation Environment</h5>
 
@@ -73,75 +359,25 @@ title: "Autonomous Navigation"
 <p>
 </p>
 
-<h5>State Machine</h5>
 
-<p>
-  The state machine is the central node of the autonomy software, managing the rover's state and transitioning between
-  states when the current mission objective has been accomplished. The node sends target positions to the path
-  planner and receives the current position of the rover from the localization node.
-</p>
 
-<p>
-  Full writeup coming soon!
-</p>
 
-<h5>Localization</h5>
-
-<p>
-  The rover has an RTK GPS system to localize itself, utilizing correction signals sent by the basestation via TCP to
-  the rover to achieve a GPS reading accurate to within one centimeter. The orientation of the rover is determined by
-  the onboard IMU.
-</p>
-
-<p>
-  Full writeup coming soon!
-</p>
-
-<h5>Path Planning</h5>
-
-<div class="project-images">
-  <!-- Path planning screenshot -->
-  <div class="project-image">
-    <img src="{{ '/assets/images/CMR/autonomy/path_planning.png' | relative_url }}" alt="">
-  </div>
-</div>
-<p>
-  The path planning node receives a target position from the state machine and uses the A* algorithm to plan a path of
-  waypoints on the current global costmap.
-</p>
-<p>
-  Full writeup coming soon!
-</p>
-
-<h5>Control</h5>
-
-<p>
-  The control node sends drive commands to the swerve drive system utilizing a Stanley controller to follow the planned
-  path. Occasionally, the point turning ability of the swerve drive system is used when sharp turns are needed.
-</p>
-
-<p>
-  Full writeup coming soon!
-</p>
-
-<h5>Costmap Generation</h5>
-
-<p>
-  The costmap node stores the current global costmap and updates it, fusing the latest data from the localization node
-  and the ZED 2i stereo camera. The ZED's point cloud data and built-in ground plane detection feature are used to
-  determine traversable regions based on the current line of sight of the rover. An update of the current global costmap
-  is sent to the path planner node at a frequency of 10 Hz.
-</p>
-
-<p>
-  Full writeup coming soon!
-</p>
 <h5>Future Improvements</h5>
 
 <p>
+  There is still work to be done on the navigation stack before the competition in June 2025. The next steps include
+  integrating the object detection node (which is already built) and tuning the costmap generation enough to be able to
+  run the rover at higher speeds with confidence. The rover will need to drive a little faster than 1 meter per second
+  in order to be able to cover the maximum distance of the mission, 2km, in the allotted 30 min time limit. Lots of
+  testing to be done!
 </p>
 
 <h5>Acknowledgements</h5>
 
 <p>
+  A huge shoutout to the rest of the <a href="https://marsrover.engineering.cornell.edu/" target="_blank">Cornell Mars
+    Rover</a> team for building an awesome rover to compete in URC 2025 and
+  for all the support throughout the year. I would also like to thank the members from last year's team who graduated
+  that helped build the 2023-2024 rover which was immensely helpful to have as a testing platform early on in
+  development.
 </p>

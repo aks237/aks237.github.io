@@ -3,34 +3,45 @@ layout: project
 title: "Realtime Musculoskeletal Analysis"
 ---
 
+<!-- Include MathJax -->
+<script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" async id="MathJax-script"
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<h6>
+  C++, Python, MATLAB, Unity, Inverse Dynamics, Reinforcement Learning, Modeling
+</h6>
+
+<h5>
+  Overview
+</h5>
+
 <p>I am working on a project that leverages motion capture data to assist caregiving robots, such as robotic arms, in
-  aiding patients with mobility limitations. By analyzing motion capture data to estimate muscle tendon use, the project
-  aims to support safe autonomous limb repositioning for patients. This work is built within RCareWorld, a robotic
-  caregiving simulator developed in Unity by members of the EmPRISE Lab at Cornell University. It integrates Python for
-  control software development. The project highlights include
-  real-time streaming of motion capture data, musculoskeletal modeling, and live estimation of muscle activations. The
-  first step of the project involved streaming live motion capture data from MVN Live, the software used with our motion
-  capture hardware. This data was processed in MATLAB, transformed into Unity’s coordinate system, and streamed into the
-  Unity simulation using Python. This allowed the real-time mirroring of patient movements by a human model in
-  RCareWorld.</p>
+  aiding patients with mobility limitations. My work includes setting up a pipeline to stream real time motion capture
+  data from MVN Live (mocap software) to Unity simulation, integrating a muscle model to actuate limbs, and modeling
+  muscle contractions from live movement. The project aims to support safe autonomous limb repositioning and bed to
+  wheelchair transfer for patients. This work is built within RCareWorld, a robotic caregiving simulator developed in
+  Unity by members of the EmPRISE Lab at Cornell University. It has a Python-side API for control software development.
+</p>
 
 <div class="project-images">
   <div class="project-image">
-    <iframe src="https://drive.google.com/file/d/1NelI00AbrmUkDJajDvd96eOusGq7mDgx/preview" width="1280" height="720"
+    <iframe src="https://drive.google.com/file/d/12oo7T3iViB9eOlvpuyUIZD3nwHYcIHL7/preview" width="1280" height="720"
       allow="autoplay" allowfullscreen>
     </iframe>
-    <p class="image-caption">Live Streaming Motion Capture Data into RCareWorld</p>
+    <p class="image-caption">Visualization of Muscle Activations Modeled from Livestreamed Mocap Data</p>
   </div>
 </div>
 
+<h5>Muscle Model and Activation Analysis</h5>
+
 <p>
-  To enable meaningful analysis of patient movements, I integrated a musculoskeletal model into RCareWorld. This model
-  features around 300 muscle tendons, each containing nodes at offsets from different bones. The muscle-tendon mechanics
-  implement a Hill-type muscle model, capturing contractile, elastic, and series dynamics. Additionally, I built
-  software
-  to control and receive data from the muscle model in Python. Below is a visualization of
-  the muscle tendons and bones in the model and a video of the model in action, actuating the legs with a random set of
-  activations sent from Python.
+  To enable meaningful analysis of patient movement, other students in the lab developed a muscle model in Unity,
+  featuring around 300 muscle tendons, each containing nodes at offsets from different bones. The mechanics implemented
+  use the Hill-type muscle model, where there is a contractile portion of the muscle with elastic elements in series and
+  parallel. I integrated this model into RCareWorld and additionally extended the RCareWorld Python API to control and
+  receive data from the muscle model. Below is a visualization of the muscle tendons and bones in the model and a video
+  of the model in action, actuating the legs with random sets of activations sent from Python.
 </p>
 
 <div class="project-images">
@@ -48,17 +59,74 @@ title: "Realtime Musculoskeletal Analysis"
 </div>
 
 <p>
-  Using the live motion capture data, I developed a system for estimating muscle activations in real time. By solving
-  for the muscle torques that produce specific joint movements, this system minimizes a cost function to provide
-  realistic approximations of muscle activations. This work, visualized in Rerun, demonstrates the potential for
-  real-time musculoskeletal analysis.
+  Using the live motion capture data, I developed a system for estimating muscle activations in real time. The human
+  models in Unity are modeled using articulation joint chains, similar to robotic arms, with spherical and revolute
+  joints. Each articulation joint has a PD controller which applies a torque vector to the joint to achieve a desired
+  velocity or orientation. By using the controllers built into Unity to make the human model follow motion capture data,
+  I was able to estimate the torques in each joint in real time. At each timestep that activations are modeled, which is
+  only every 20 to avoid heavy lag, Unity sends the joint torques and the muscle “unit torques”. The muscles can have an
+  activation between 0 and 1 at any given timestep. The unit torque for each tendon is the amount of torque for each
+  node (joint) the tendon is connected to that an activation of 1 will result in. When solving for the muscle torques
+  that produce specific joint movements, this system minimizes a cost function, combining total muscle effort and change
+  in activations from the previous timestep, to provide realistic approximations of muscle activations. This work,
+  visualized in Rerun, demonstrates a baseline for real-time musculoskeletal analysis.
+
 </p>
 
+<h5>Reinforcement Learning</h5>
+<p>I am currently working on using RL to train a muscle activation controller in Python using open-source motion capture
+  libraries. The idea is to train a policy that will determine activations for the muscle tendons to actuate joints and
+  follow live mocap data in simulation. At each timestep, the controller will have feedback from the simulation of the
+  current joint orientations and velocities, the desired next orientations and velocities from the motion capture
+  software, and the previous set of muscle activations. It will then determine an action that minimizes a cost function
+  combining error in joint orientations, velocities, and total muscle activation effort.</p>
+<p>
+  Results and full writeup coming soon!
+</p>
+
+<h5>Data Pipeline</h5>
+
+<div class="project-image">
+  <img src="{{ '/assets/images/Emprise/musculoskeletal/full_pipeline.png' | relative_url }}" alt="">
+</div>
+
+<p>
+  The motion capture setup involves 17 sensors connected to specific points on a user’s body that tracks their motion.
+  The MVN Live software is connected to these sensors and extrapolates the orientations of 24 joints on the body along
+  the legs, arms, vertebrae, and neck. For ease of testing, the MVN Live software plays back prerecorded motion capture
+  datasets and streams them as if they are in real-time. From there, I set up a MATLAB script to connect to the stream
+  via UDP socket, where each packet of data contains all 24 joint orientations. The joints are streamed in their local
+  orientations, meaning relative to their parent joint (i.e. the hips are the parents of the knees), as that is how
+  joint angles are defined on the human models in Unity. The Y and Z coordinate frames are swapped as MVN uses a Z-up
+  coordinate system while Unity uses a Y-up coordinate system and offset constants are added to the joints to correct
+  for difference in origin poses.
+</p>
 <div class="project-images">
   <div class="project-image">
-    <iframe src="https://drive.google.com/file/d/1L5c1R9NvCTxBzYoxun7_xOnvKmXx7ZWD/preview" width="1280" height="720"
+    <iframe src="https://drive.google.com/file/d/1NelI00AbrmUkDJajDvd96eOusGq7mDgx/preview" width="1280" height="720"
       allow="autoplay" allowfullscreen>
     </iframe>
-    <p class="image-caption">Musculoskeletal Analysis in Rerun</p>
+    <p class="image-caption">Streaming from MVN Live to RCareWorld</p>
   </div>
 </div>
+
+
+<h5>Future Work</h5>
+<p>
+  This project is still in its early stages. In order for it to be implemented in a real to sim to real pipeline for
+  informing robot policies, the
+  project needs to be able to model contact forces, especially with a patient in bed, run much quicker in real-time, and
+  be validated against more popular models such as OpenSim. OpenSim does not support real-time analysis, but it can
+  still be used to validate the results using the same sets of prerecorded motion capture sessions. In order for the
+  analysis to be viable in real-time, the current implementation will not work. It requires large amounts of data sent
+  from Unity to Python. I am currently implementing two different approaches to mitigate this problem. The first is
+  performing all of the analysis on the Unity side and only sending the muscle activation results back to Python. The
+  second is using reinforcement learning to train a controller on the Python side to determine activations.
+</p>
+
+<h5>Acknowledgements</h5>
+<p>
+  Much of the credit for this project goes to members of the EmPRISE Lab at Cornell. Particularly Ruolin Ye and Justin
+  Guo, who have put a lot of work into developing RCareWorld.
+
+</p>

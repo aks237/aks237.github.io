@@ -28,7 +28,7 @@ title: "Autonomous Navigation"
 
 <div class="project-images">
   <div class="project-image">
-    <iframe src="https://drive.google.com/file/d/1XqwnJGw4GtMwKlG10Sg3UllUTtGHnYKj/preview" width="1280" height="720"
+    <iframe src="https://drive.google.com/file/d/1jfUOeRiYe0lxGkcQjXt3ZRhF4fUzNcQD/preview" width="1280" height="720"
       allow="autoplay" allowfullscreen>
     </iframe>
   </div>
@@ -40,15 +40,15 @@ title: "Autonomous Navigation"
 </div>
 
 <p>
-  This system is built on ROS2 and based on Nav2, the industrial framework for autonomous mobile robots. The diagram
-  above depicts the flow of information between the ROS nodes. The central logic for the system is in the state machine
-  node, which determines what the next GNSS coordinate is, whether a target has been reached, and what autonomy game
-  objects to look for at certain coordinates. The state machine node sends targets to the path planner node, which plans
-  a path (or validates the current one) using localization estimates and a costmap of the environment. The planned path
-  is sent to the controller, which generates high-level driving commands to follow the path. The drives commands are
-  converted to motor commands in a designated drives node, which sends them through a CAN FD line connected to all eight
-  motor controllers in the rover’s swerve drive system. The localization node receives feedback from the drives node,
-  along with data from the rover’s sensor suite of a ZED 2i stereo vision camera, an RTK GPS system, and an IMU, to
+  This system is built on ROS2 and designed based off of Nav2, the industrial framework for autonomous mobile robots.
+  The diagram above depicts the flow of information between the ROS nodes. The central logic for the system is in the
+  state machine node, which determines what the next GNSS coordinate is, whether a target has been reached, and what
+  autonomy game objects to look for at certain coordinates. The state machine node sends targets to the path planner
+  node, which plans a path (or validates the current one) using localization estimates and a costmap of the environment.
+  The planned path is sent to the controller, which generates high-level driving commands to follow the path. The drives
+  commands are converted to motor commands in a designated drives node, which sends them through a CAN FD line connected
+  to all eight motor controllers in the rover’s swerve drive system. The localization node receives feedback from the
+  drives node, along with data from the rover’s sensor suite of a ZED 2i stereo vision camera and an RTK GPS system to
   produce precise localization and orientation estimates.
 </p>
 
@@ -57,14 +57,13 @@ title: "Autonomous Navigation"
 <p>
   In order to navigate through fields of obstacles, the rover must have a precise localization estimate in order to
   generate a global costmap, plan and follow paths, and determine when it has reached its goal. The navigation
-  implements an
-  Extended Kalman Filter (EKF), fusing visual inertial odometry (VIO) tracking data from the ZED stereo vision camera,
-  feedback from motor controllers, IMU data, and a real time kinematic (RTK) GPS system. RTK GPS utilizes correction
-  signals sent by the base station via TCP to the rover to achieve a GPS reading accurate to within one centimeter. This
-  is done by computing the real-time corrections for satellite signals at the base station, which is at a known, fixed
-  position, and sending them to the rover through a TCP socket. The rover ingests these correction signals, sent in the
-  RTCM (Radio Technical Commission for Maritime Services) message format, to correct its current localization reading.
-
+  implements an Extended Kalman Filter (EKF), fusing visual inertial odometry (VIO) tracking data from the ZED stereo
+  vision camera, feedback from motor controllers, and a real time kinematic (RTK) GPS system. RTK GPS utilizes
+  correction signals sent by the base station via TCP to the rover to achieve a GPS reading accurate to within one
+  centimeter. This is done by computing the real-time corrections for satellite signals at the base station, which is at
+  a known, fixed position, and sending them to the rover through a TCP socket. The rover ingests these correction
+  signals, sent in the RTCM (Radio Technical Commission for Maritime Services) message format, to correct its current
+  localization reading.
 </p>
 
 <div class="project-images">
@@ -163,22 +162,8 @@ title: "Autonomous Navigation"
   \]
 </p>
 
-<p><strong>2. IMU (Yaw Heading Only)</strong></p>
-<p>
-  \[
-  \mathbf{z}_k^{\text{IMU}} =
-  \begin{bmatrix}
-  \theta
-  \end{bmatrix},
-  \quad
-  \mathbf{H}_k^{\text{IMU}} =
-  \begin{bmatrix}
-  0 & 0 & 1
-  \end{bmatrix}
-  \]
-</p>
 
-<p><strong>3. RTK GPS (Latitude Longitude Converted to North and West Displacement from the Starting
+<p><strong>2. RTK GPS (Latitude Longitude Converted to North and West Displacement from the Starting
     Coordinate)</strong></p>
 <p>
   \[
@@ -205,10 +190,8 @@ title: "Autonomous Navigation"
 <p> \[ \mathbf{x}_{k \mid k} = \mathbf{x}_{k \mid k-1} + \mathbf{K}_k \, \mathbf{y}_k \] </p>
 <p> \[ \mathbf{P}_{k \mid k} = (\mathbf{I} - \mathbf{K}_k \, \mathbf{H}_k) \, \mathbf{P}_{k \mid k-1} \] </p>
 <p> Here, \(\mathbf{R}\) is the measurement covariance, which is dynamically updated from the GPS and ZED with each
-  measurement
-  taken and set to a constant for the IMU. This update incorporates all available measurements to refine
-  the rover’s \([x, y, \theta]\) estimate. </p>
-<p> By combining prediction from swerve drive kinematics and continual updates from camera odometry, IMU, and
+  measurement taken. This update incorporates all available measurements to refine the rover’s \([x, y, \theta]\)
+  estimate. By combining prediction from motor feedback and continual updates from camera odometry and
   GPS, the filter provides a precise state estimate for autonomous navigation even without base station correction
   signals.</p>
 

@@ -5,25 +5,25 @@
   description: "Developing a full-stack autonomous navigation system for Cornell's Mars Rover Team."
   featured: true
 
-- title: "Rover Controls"
-  url: "/projects/rover-controls.html"
-  image: "/assets/images/CMR/controls/rover-cropped.jpg"
-  skills: "ROS2, Python, OpenCV, Full Stack Robotics Development, Stereo Vision, Kinematics, Motor Control, CAN-FD"
-  description: "Developed low and high level controls for the arm and drives system of Cornell's Mars Rover."
-  featured: true
-
 - title: "Realtime Musculoskeletal Analysis"
   url: "/projects/musculoskeletal.html"
   image: "/assets/images/Emprise/musculoskeletal/thumbnail.png"
-  skills: "C++, Python, MATLAB, Unity, Realtime Optimization, Inverse Dynamics, Musculoskeletal Modeling"
+  skills: "C++, Python, MATLAB, Unity, Inverse Dynamics, Reinforcement Learning, Modeling"
   description: "Building a real-time musculoskeletal analysis tool for safer assistive robotics."
   featured: true
 
 - title: "Pulsed Thruster Maneuver Simulation"
   url: "/projects/spacecraft_sim.html"
   image: "/assets/images/spacecraft_sim/spacecraft_thumbnail.png"
-  skills: "MATLAB, Optimal Control, Spacecraft Attitude Dynamics, System Modeling and Simulation"
+  skills: "MATLAB, Simulation, Optimal Control, Spacecraft Attitude Dynamics"
   description: "Built a simulation and LQR controller to model the trajectory of a spacecraft performing a maneuver to stop spinning."
+  featured: true
+
+- title: "Rover Controls"
+  url: "/projects/rover-controls.html"
+  image: "/assets/images/CMR/controls/rover-cropped.jpg"
+  skills: "ROS2, Python, OpenCV, Full Stack Robotics Development, Stereo Vision, Kinematics, Motor Control, CAN-FD"
+  description: "Developed low and high level controls for the arm and drives system of Cornell's Mars Rover."
   featured: true
 
 - title: "Robot Arm Typing"
